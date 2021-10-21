@@ -1,13 +1,14 @@
 package vault
 
 import (
-	"fmt"
-
 	vault "github.com/hashicorp/vault/api"
 )
 
-func Login() {
-	config := vault.DefaultConfig()
-	fmt.Printf("Vault config = %v", config)
-	// vault.NewClient()
+// Login checks that vault client can login
+//TODO: refactor into NewVaultClient
+func Login() error {
+	//TODO: read config from env var or file
+	client, err := vault.NewClient(nil)
+	_, err = client.Logical().Read("kv-v2/data/")
+	return err
 }

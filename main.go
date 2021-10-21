@@ -1,7 +1,13 @@
 package main
 
-import "vault-usecase/vault"
+import (
+	"fmt"
+	"vault-usecase/vault"
+)
 
 func main() {
-	vault.Login()
+	err := vault.Login()
+	if err != nil {
+		fmt.Errorf("unable to initialize Vault client: %w", err)
+	}
 }
