@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestVaultLogin(t *testing.T) {
-	err := vault.Login()
+func TestNewVaultClient(t *testing.T) {
+	_, err := vault.NewVaultClient(nil)
 	assert.Nil(t, err)
 }
