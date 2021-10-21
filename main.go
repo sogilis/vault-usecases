@@ -1,7 +1,7 @@
 package main
 
-import "fmt"
+import "vault-usecase/vault"
 
 func main() {
-	fmt.Println("Coucou")
+	vault.Login()
 }
