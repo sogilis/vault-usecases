@@ -13,7 +13,7 @@ import (
 var rootClient root.RootClient
 
 //beforeAll retrieves and sets the root vault client
-func beforeAll(t *testing.T) {
+func setRootClientWithRootToken(t *testing.T) {
 	vaultRootToken := os.Getenv("VAULT_ROOT_TK")
 	require.NotNil(t, vaultRootToken, "cannot retrieve mandatory root token")
 
@@ -23,11 +23,13 @@ func beforeAll(t *testing.T) {
 }
 
 func TestValidNewUserAuth(t *testing.T) {
-	beforeAll(t)
-	t.Run("Enable, then disable, userpass auth with root token", enableAndDisableUserpassAuthTest)
+	setRootClientWithRootToken(t)
+
+	t.Run("Enable, then disable, userpass auth with root token", enableAndDisableUserpassAuthWithRootTokenTest)
+	t.Run("Create and deletes usergen policy with root token", createAndDeleteUsegenPolicyTest)
 }
 
-func enableAndDisableUserpassAuthTest(t *testing.T) {
+func enableAndDisableUserpassAuthWithRootTokenTest(t *testing.T) {
 	//Given
 
 	//When
@@ -35,5 +37,16 @@ func enableAndDisableUserpassAuthTest(t *testing.T) {
 	require.Nil(t, err)
 
 	err = rootClient.DisableUserpassAuth()
+	assert.Nil(t, err)
+}
+
+func createAndDeleteUsegenPolicyTest(t *testing.T) {
+	//Given
+
+	//When
+	err := rootClient.CreateUserGeneratorPolicy()
+	require.Nil(t, err)
+
+	err = rootClient.DeleteUserGeneratorPolicy()
 	assert.Nil(t, err)
 }

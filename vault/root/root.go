@@ -1,13 +1,15 @@
 package root
 
 import (
+	"encoding/base64"
 	"fmt"
 
 	vault "github.com/hashicorp/vault/api"
 )
 
 type RootClient interface {
-	CreateAuthUserPolicy() error
+	CreateUserGeneratorPolicy() error
+	DeleteUserGeneratorPolicy() error
 	DisableUserpassAuth() error
 	EnableUserpassAuth() error
 }
@@ -33,7 +35,32 @@ func NewRootClient(c *vault.Config, token string) (*RootVaultClient, error) {
 	return &RootVaultClient{c: client}, nil
 }
 
-func (rvc *RootVaultClient) CreateAuthUserPolicy() error {
+func (rvc *RootVaultClient) CreateUserGeneratorPolicy() error {
+	userGenPolicy := `# Create userpass auth
+path "auth/userpass/users" {
+    capabilities = ["create"]
+}`
+	encodedPolicy := base64.StdEncoding.EncodeToString([]byte(userGenPolicy))
+
+	params := map[string]interface{}{
+		"name":   "usergen",
+		"policy": encodedPolicy,
+	}
+
+	_, err := rvc.c.Logical().Write("/sys/policy/usergen", params)
+	if err != nil {
+		fmt.Printf("ERROR: cannot write usergen policy : %v", err)
+		return err
+	}
+	return nil
+}
+
+func (rvc *RootVaultClient) DeleteUserGeneratorPolicy() error {
+	_, err := rvc.c.Logical().Delete("/sys/policy/usergen")
+	if err != nil {
+		fmt.Printf("ERROR: cannot delete usergen policy : %v", err)
+		return err
+	}
 	return nil
 }
 
