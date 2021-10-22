@@ -12,6 +12,8 @@ type RootClient interface {
 	DeleteUserGeneratorPolicy() error
 	DisableUserpassAuth() error
 	EnableUserpassAuth() error
+	GenerateUsergenToken() (string, error)
+	RevokeUsergenToken(string) error
 }
 
 type RootVaultClient struct {
@@ -86,4 +88,43 @@ func (rvc *RootVaultClient) EnableUserpassAuth() error {
 		return err
 	}
 	return nil
+}
+
+func (rvc *RootVaultClient) GenerateUsergenToken() (string, error) {
+	params := map[string]interface{}{
+		"role_name":    "usergen",
+		"policies":     []string{"usergen"},
+		"type":         "service",
+		"display_name": "usergen",
+	}
+
+	secret, err := rvc.c.Logical().Write("/auth/token/create", params)
+	if err != nil {
+		fmt.Printf("ERROR: cannot create usergen token : %v", err)
+		return "", err
+	}
+	return extractToken(secret)
+}
+
+func (rvc *RootVaultClient) RevokeUsergenToken(token string) error {
+	params := map[string]interface{}{
+		"token": token,
+	}
+	_, err := rvc.c.Logical().Write("/auth/token/revoke", params)
+	if err != nil {
+		fmt.Printf("ERROR: cannot revoke token %v : %v", token, err)
+		return err
+	}
+	return nil
+}
+
+func extractToken(secret *vault.Secret) (string, error) {
+	if secret.Auth == nil {
+		return "", fmt.Errorf("No Auth provided in response")
+	}
+	if secret.Auth.ClientToken == "" {
+		return "", fmt.Errorf("No client token provided")
+	}
+
+	return secret.Auth.ClientToken, nil
 }

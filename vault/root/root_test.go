@@ -1,6 +1,7 @@
 package root_test
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -27,6 +28,7 @@ func TestValidNewUserAuth(t *testing.T) {
 
 	t.Run("Enable, then disable, userpass auth with root token", enableAndDisableUserpassAuthWithRootTokenTest)
 	t.Run("Create and deletes usergen policy with root token", createAndDeleteUsegenPolicyTest)
+	t.Run("Generate and revoke a usergen token with root token", generateAndRevokeUsergenTokenTest)
 }
 
 func enableAndDisableUserpassAuthWithRootTokenTest(t *testing.T) {
@@ -47,6 +49,24 @@ func createAndDeleteUsegenPolicyTest(t *testing.T) {
 	err := rootClient.CreateUserGeneratorPolicy()
 	require.Nil(t, err)
 
+	err = rootClient.DeleteUserGeneratorPolicy()
+	assert.Nil(t, err)
+}
+
+func generateAndRevokeUsergenTokenTest(t *testing.T) {
+	//Given
+	err := rootClient.CreateUserGeneratorPolicy()
+	require.Nil(t, err)
+
+	//When
+	token, err := rootClient.GenerateUsergenToken()
+	require.Nil(t, err)
+	fmt.Printf("token %v hase been generated\n", token)
+
+	err = rootClient.RevokeUsergenToken(token)
+	assert.Nil(t, err)
+
+	//After
 	err = rootClient.DeleteUserGeneratorPolicy()
 	assert.Nil(t, err)
 }
