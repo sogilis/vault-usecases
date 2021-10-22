@@ -12,16 +12,14 @@ type VaultClient struct {
 	c *vault.Client
 }
 
-type dataSecret struct {
-	keys []string
-}
-
 //NewVaultClient creates a vault client and checks its connecatbility
-func NewVaultClient(c *vault.Config) (*VaultClient, error) {
+func NewVaultClientFromToken(c *vault.Config, token string) (*VaultClient, error) {
 	client, err := vault.NewClient(c)
 	if err != nil {
 		return nil, err
 	}
+
+	client.SetToken(token)
 
 	_, err = client.Logical().Read("kv-v2/data/")
 	if err != nil {
