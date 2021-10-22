@@ -6,14 +6,16 @@ import (
 
 	"vault-usecase/vault/root"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 var rootClient root.RootClient
 
+//beforeAll retrieves and sets the root vault client
 func beforeAll(t *testing.T) {
 	vaultRootToken := os.Getenv("VAULT_ROOT_TK")
-	require.NotNil(t, vaultRootToken, "cannot retrienve mandatory root token")
+	require.NotNil(t, vaultRootToken, "cannot retrieve mandatory root token")
 
 	var err error
 	rootClient, err = root.NewRootClient(nil, vaultRootToken)
@@ -21,13 +23,17 @@ func beforeAll(t *testing.T) {
 }
 
 func TestValidNewUserAuth(t *testing.T) {
-	//Given
 	beforeAll(t)
+	t.Run("Enable, then disable, userpass auth with root token", enableAndDisableUserpassAuthTest)
+}
+
+func enableAndDisableUserpassAuthTest(t *testing.T) {
+	//Given
 
 	//When
 	err := rootClient.EnableUserpassAuth()
 	require.Nil(t, err)
 
-	err = rootClient.CreateAuthUserPolicy()
-	require.Nil(t, err)
+	err = rootClient.DisableUserpassAuth()
+	assert.Nil(t, err)
 }

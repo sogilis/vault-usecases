@@ -8,6 +8,7 @@ import (
 
 type RootClient interface {
 	CreateAuthUserPolicy() error
+	DisableUserpassAuth() error
 	EnableUserpassAuth() error
 }
 
@@ -36,6 +37,15 @@ func (rvc *RootVaultClient) CreateAuthUserPolicy() error {
 	return nil
 }
 
+func (rvc *RootVaultClient) DisableUserpassAuth() error {
+	_, err := rvc.c.Logical().Delete("/sys/auth/userpass")
+	if err != nil {
+		fmt.Printf("ERROR: cannot disable userpass auth : %v", err)
+		return err
+	}
+	return nil
+}
+
 func (rvc *RootVaultClient) EnableUserpassAuth() error {
 	params := map[string]interface{}{
 		"path":        "userpass",
@@ -45,7 +55,7 @@ func (rvc *RootVaultClient) EnableUserpassAuth() error {
 
 	_, err := rvc.c.Logical().Write("/sys/auth/userpass", params)
 	if err != nil {
-		fmt.Printf("ERROR: cannot create user auth in vault : %v", err)
+		fmt.Printf("ERROR: cannot enable userpass auth : %v", err)
 		return err
 	}
 	return nil
